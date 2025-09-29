@@ -1,3 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Simple File Uploader</title>
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<main class="container">
+  <h1>File upload & download</h1>
+
+  <form id="uploadForm">
+    <input id="fileInput" type="file" name="file" />
+    <button type="submit">Upload</button>
+  </form>
+
+  <section>
+    <h2>Uploaded files</h2>
+    <ul id="filesList">Loading...</ul>
+  </section>
+</main>
+
 <script>
 async function listFiles() {
   const res = await fetch('/files');
@@ -11,16 +34,13 @@ async function listFiles() {
 
   for (const f of files) {
     const li = document.createElement('li');
-
-    // filename text
-    li.appendChild(document.createTextNode(f.name + ' '));
+    li.textContent = f.name + ' ';
 
     // download button
     const dl = document.createElement('button');
     dl.textContent = 'Download';
     dl.style.marginLeft = '10px';
     dl.addEventListener('click', () => {
-      // force browser download
       const a = document.createElement('a');
       a.href = '/download/' + encodeURIComponent(f.name);
       a.download = f.name;
@@ -71,11 +91,9 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   while (res.status === 409) {
     const newName = prompt(`File "${file.name}" already exists. Enter a new name:`, file.name);
     if (!newName) return; // user cancelled
-
     file = new File([file], newName.trim(), { type: file.type });
     const form2 = new FormData();
     form2.append('file', file);
-
     res = await fetch('/upload', { method: 'POST', body: form2 });
     data = await res.json();
   }
@@ -92,3 +110,5 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 // initial list
 listFiles();
 </script>
+</body>
+</html>
