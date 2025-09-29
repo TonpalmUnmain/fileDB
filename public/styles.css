@@ -1,0 +1,76 @@
+:root {
+  --bg: #f7f8fb;
+  --card: #ffffff;
+  --accent: #3b82f6;
+  --text: #111111;
+  --border: #f0f0f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --accent: #3b82f6; /* keep same accent */
+    --text: #e2e8f0;
+    --border: #334155;
+  }
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, system-ui, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+  color: var(--text);
+}
+
+body {
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  width: min(760px, 94%);
+  background: var(--card);
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+button {
+  background: var(--accent);
+  color: white;
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

@@ -1,0 +1,94 @@
+<script>
+async function listFiles() {
+  const res = await fetch('/files');
+  const files = await res.json();
+  const ul = document.getElementById('filesList');
+  ul.innerHTML = '';
+  if (files.length === 0) {
+    ul.innerHTML = '<li>No files uploaded.</li>';
+    return;
+  }
+
+  for (const f of files) {
+    const li = document.createElement('li');
+
+    // filename text
+    li.appendChild(document.createTextNode(f.name + ' '));
+
+    // download button
+    const dl = document.createElement('button');
+    dl.textContent = 'Download';
+    dl.style.marginLeft = '10px';
+    dl.addEventListener('click', () => {
+      // force browser download
+      const a = document.createElement('a');
+      a.href = '/download/' + encodeURIComponent(f.name);
+      a.download = f.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+    li.appendChild(dl);
+
+    // file details
+    if (f.size) li.appendChild(document.createTextNode(` (${(f.size/1024).toFixed(1)} KB)`));
+    if (f.mtime) li.appendChild(document.createTextNode(` - ${new Date(f.mtime).toLocaleString()}`));
+
+    // delete button
+    const del = document.createElement('button');
+    del.textContent = 'Delete';
+    del.style.marginLeft = '10px';
+    del.addEventListener('click', async () => {
+      if (!confirm(`Are you sure you want to delete "${f.name}"?`)) return;
+      const delRes = await fetch('/delete/' + encodeURIComponent(f.name), { method: 'DELETE' });
+      if (delRes.ok) {
+        alert(`Deleted: ${f.name}`);
+        listFiles();
+      } else {
+        const errData = await delRes.json().catch(() => ({}));
+        alert('Delete failed: ' + (errData.error || delRes.statusText));
+      }
+    });
+    li.appendChild(del);
+
+    ul.appendChild(li);
+  }
+}
+
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const input = document.getElementById('fileInput');
+  if (!input.files.length) return alert('Select a file first');
+
+  let file = input.files[0];
+  const form = new FormData();
+  form.append('file', file);
+
+  let res = await fetch('/upload', { method: 'POST', body: form });
+  let data = await res.json();
+
+  // If conflict (file exists)
+  while (res.status === 409) {
+    const newName = prompt(`File "${file.name}" already exists. Enter a new name:`, file.name);
+    if (!newName) return; // user cancelled
+
+    file = new File([file], newName.trim(), { type: file.type });
+    const form2 = new FormData();
+    form2.append('file', file);
+
+    res = await fetch('/upload', { method: 'POST', body: form2 });
+    data = await res.json();
+  }
+
+  if (res.ok) {
+    alert('Uploaded: ' + data.filename);
+    input.value = '';
+    listFiles();
+  } else {
+    alert('Upload failed: ' + (data.error || JSON.stringify(data)));
+  }
+});
+
+// initial list
+listFiles();
+</script>
